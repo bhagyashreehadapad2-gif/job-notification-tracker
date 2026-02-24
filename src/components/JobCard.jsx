@@ -1,12 +1,49 @@
 import React from 'react';
 
-const JobCard = ({ job, onSave, onUnsave, isSaved, onView }) => {
+const JobCard = ({ job, onSave, onUnsave, isSaved, onView, matchScore }) => {
+    const getScoreColor = (score) => {
+        if (score >= 80) return '#228B22'; // Green
+        if (score >= 60) return '#FFBF00'; // Amber
+        if (score >= 40) return 'var(--text-primary)'; // Neutral
+        return '#808080'; // Grey
+    };
+
     return (
         <div className="card" style={{
             marginBottom: 'var(--space-24)',
             transition: 'border-color 0.2s ease',
+            position: 'relative'
         }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-16)' }}>
+            {matchScore !== undefined && (
+                <div style={{
+                    position: 'absolute',
+                    top: 'var(--space-16)',
+                    right: 'var(--space-16)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    gap: '4px'
+                }}>
+                    <span style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        opacity: 0.5,
+                        textTransform: 'uppercase'
+                    }}>
+                        Match
+                    </span>
+                    <span style={{
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        color: getScoreColor(matchScore),
+                        fontFamily: 'var(--font-sans)'
+                    }}>
+                        {matchScore}%
+                    </span>
+                </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-16)', marginRight: matchScore !== undefined ? '80px' : 0 }}>
                 <div>
                     <h3 style={{ margin: 0, fontSize: '20px', marginBottom: 'var(--space-8)' }}>{job.title}</h3>
                     <p style={{
@@ -19,16 +56,18 @@ const JobCard = ({ job, onSave, onUnsave, isSaved, onView }) => {
                         {job.company} • {job.location} ({job.mode})
                     </p>
                 </div>
-                <div style={{
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: 'var(--accent-color)',
-                    backgroundColor: 'rgba(139, 0, 0, 0.05)',
-                    padding: '4px 12px',
-                    border: '1px solid rgba(139, 0, 0, 0.1)'
-                }}>
-                    {job.source}
-                </div>
+                {!matchScore && (
+                    <div style={{
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: 'var(--accent-color)',
+                        backgroundColor: 'rgba(139, 0, 0, 0.05)',
+                        padding: '4px 12px',
+                        border: '1px solid rgba(139, 0, 0, 0.1)'
+                    }}>
+                        {job.source}
+                    </div>
+                )}
             </div>
 
             <div style={{
@@ -42,6 +81,7 @@ const JobCard = ({ job, onSave, onUnsave, isSaved, onView }) => {
                 <span>Exp: {job.experience}</span>
                 <span>{job.salaryRange}</span>
                 <span>{job.postedDaysAgo === 0 ? 'Today' : `${job.postedDaysAgo}d ago`}</span>
+                {matchScore !== undefined && <span>{job.source}</span>}
             </div>
 
             <div style={{ display: 'flex', gap: 'var(--space-16)', alignItems: 'center' }}>

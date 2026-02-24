@@ -7,6 +7,7 @@ const FilterBar = ({ filters, onFilterChange }) => {
     const sources = ["All Sources", "LinkedIn", "Naukri", "Indeed"];
     const sortOptions = [
         { label: "Latest", value: "latest" },
+        { label: "Match Score", value: "match-desc" },
         { label: "Salary (High to Low)", value: "salary-desc" },
         { label: "Experience (Low to High)", value: "exp-asc" }
     ];
