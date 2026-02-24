@@ -39,7 +39,9 @@ const DigestPage = () => {
                 matchScore: calculateMatchScore(job, prefs)
             }));
 
-            const sorted = scoredJobs.sort((a, b) => {
+            const filtered = scoredJobs.filter(job => job.matchScore >= (prefs.minMatchScore || 0));
+
+            const sorted = filtered.sort((a, b) => {
                 if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
                 return a.postedDaysAgo - b.postedDaysAgo;
             }).slice(0, 10);
