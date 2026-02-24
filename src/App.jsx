@@ -1,8 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
-import PlaceholderPage from './components/PlaceholderPage';
 import NotFound from './components/NotFound';
+
+// Pages
+import LandingPage from './pages/LandingPage';
+import DashboardPage from './pages/DashboardPage';
+import SettingsPage from './pages/SettingsPage';
+import SavedPage from './pages/SavedPage';
+import DigestPage from './pages/DigestPage';
+import ProofPage from './pages/ProofPage';
 
 const Layout = ({ children }) => (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -18,12 +25,12 @@ function App() {
         <Router>
             <Layout>
                 <Routes>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<PlaceholderPage title="Dashboard" />} />
-                    <Route path="/saved" element={<PlaceholderPage title="Saved Notifications" />} />
-                    <Route path="/digest" element={<PlaceholderPage title="Daily Digest" />} />
-                    <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
-                    <Route path="/proof" element={<PlaceholderPage title="Build Proof" />} />
+                    <Route path="/" element={<LandingPage />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/saved" element={<SavedPage />} />
+                    <Route path="/digest" element={<DigestPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/proof" element={<ProofPage />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </Layout>
