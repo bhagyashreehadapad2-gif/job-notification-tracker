@@ -10,6 +10,8 @@ import SettingsPage from './pages/SettingsPage';
 import SavedPage from './pages/SavedPage';
 import DigestPage from './pages/DigestPage';
 import ProofPage from './pages/ProofPage';
+import TestChecklistPage from './pages/TestChecklistPage';
+import ShipPage from './pages/ShipPage';
 
 const Layout = ({ children }) => (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -31,6 +33,8 @@ function App() {
                     <Route path="/digest" element={<DigestPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/proof" element={<ProofPage />} />
+                    <Route path="/jt/07-test" element={<TestChecklistPage />} />
+                    <Route path="/jt/08-ship" element={<ShipPage />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </Layout>
