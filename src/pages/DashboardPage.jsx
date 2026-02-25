@@ -4,7 +4,9 @@ import jobsData from '../data/jobs.json';
 import JobCard from '../components/JobCard';
 import FilterBar from '../components/FilterBar';
 import JobModal from '../components/JobModal';
+import Toast from '../components/Toast';
 import { calculateMatchScore } from '../utils/scoring';
+import { STATUS_STATES, getJobStatus, setJobStatus } from '../utils/status';
 
 const DashboardPage = () => {
     const [filters, setFilters] = useState({
@@ -13,6 +15,7 @@ const DashboardPage = () => {
         mode: 'All Modes',
         experience: 'All Experience',
         source: 'All Sources',
+        status: 'All Statuses',
         sort: 'latest' // default changed to match-desc if prefs exist later
     });
 
@@ -20,6 +23,8 @@ const DashboardPage = () => {
     const [showOnlyMatches, setShowOnlyMatches] = useState(false);
     const [savedJobIds, setSavedJobIds] = useState([]);
     const [selectedJob, setSelectedJob] = useState(null);
+    const [jobStatuses, setJobStatuses] = useState({});
+    const [toast, setToast] = useState(null);
 
     // Initialize from localStorage
     useEffect(() => {
@@ -32,6 +37,10 @@ const DashboardPage = () => {
 
         const savedIds = JSON.parse(localStorage.getItem('savedJobIds') || '[]');
         setSavedJobIds(savedIds);
+
+        // Load all job statuses
+        const allStatuses = JSON.parse(localStorage.getItem('jobTrackerStatuses') || '{}');
+        setJobStatuses(allStatuses);
     }, []);
 
     const handleSave = (id) => {
@@ -46,11 +55,21 @@ const DashboardPage = () => {
         localStorage.setItem('savedJobIds', JSON.stringify(newSaved));
     };
 
+    const handleStatusUpdate = (jobId, newStatus) => {
+        const job = jobsData.find(j => j.id === jobId);
+        if (!job) return;
+
+        setJobStatus(jobId, newStatus, job);
+        setJobStatuses(prev => ({ ...prev, [jobId]: newStatus }));
+        setToast({ message: `Status updated: ${newStatus}`, type: 'success' });
+    };
+
     const processedJobs = useMemo(() => {
         // First compute match scores for all jobs
         const scoredJobs = jobsData.map(job => ({
             ...job,
-            matchScore: prefs ? calculateMatchScore(job, prefs) : undefined
+            matchScore: prefs ? calculateMatchScore(job, prefs) : undefined,
+            status: jobStatuses[job.id] || STATUS_STATES.NOT_APPLIED
         }));
 
         return scoredJobs
@@ -62,11 +81,12 @@ const DashboardPage = () => {
                 const matchMode = filters.mode === 'All Modes' || job.mode === filters.mode;
                 const matchExp = filters.experience === 'All Experience' || job.experience === filters.experience;
                 const matchSource = filters.source === 'All Sources' || job.source === filters.source;
+                const matchStatus = filters.status === 'All Statuses' || job.status === filters.status;
 
                 // Threshold Toggle Logic
                 const matchThreshold = !showOnlyMatches || (job.matchScore >= (prefs?.minMatchScore || 0));
 
-                return matchQuery && matchLocation && matchMode && matchExp && matchSource && matchThreshold;
+                return matchQuery && matchLocation && matchMode && matchExp && matchSource && matchStatus && matchThreshold;
             })
             .sort((a, b) => {
                 if (filters.sort === 'match-desc') return (b.matchScore || 0) - (a.matchScore || 0);
@@ -81,7 +101,7 @@ const DashboardPage = () => {
                 }
                 return 0;
             });
-    }, [filters, prefs, showOnlyMatches]);
+    }, [filters, prefs, showOnlyMatches, jobStatuses]);
 
     return (
         <div style={{ padding: 'var(--space-64) 0' }}>
@@ -153,6 +173,8 @@ const DashboardPage = () => {
                             isSaved={savedJobIds.includes(job.id)}
                             onView={setSelectedJob}
                             matchScore={job.matchScore}
+                            status={job.status}
+                            onStatusChange={handleStatusUpdate}
                         />
                     ))
                 ) : (
@@ -170,8 +192,17 @@ const DashboardPage = () => {
                 job={selectedJob}
                 onClose={() => setSelectedJob(null)}
             />
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };
 
 export default DashboardPage;
+

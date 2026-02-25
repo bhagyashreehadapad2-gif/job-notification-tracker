@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import jobsData from '../data/jobs.json';
 import { calculateMatchScore } from '../utils/scoring';
 import DigestJobItem from '../components/DigestJobItem';
+import { getStatusHistory, STATUS_STATES } from '../utils/status';
 
 const DigestPage = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -12,6 +13,7 @@ const DigestPage = () => {
     const [digest, setDigest] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [copyStatus, setCopyStatus] = useState(false);
+    const [history, setHistory] = useState([]);
 
     useEffect(() => {
         // Load prefs
@@ -25,6 +27,9 @@ const DigestPage = () => {
         if (savedDigest) {
             setDigest(JSON.parse(savedDigest));
         }
+
+        // Load history
+        setHistory(getStatusHistory());
     }, [digestKey]);
 
     const generateDigest = () => {
@@ -69,6 +74,15 @@ const DigestPage = () => {
             `\n\nThis digest was generated based on your preferences.`
         );
         window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    };
+
+    const getStatusColor = (s) => {
+        switch (s) {
+            case STATUS_STATES.APPLIED: return '#1e90ff';
+            case STATUS_STATES.REJECTED: return '#dc3545';
+            case STATUS_STATES.SELECTED: return '#28a745';
+            default: return 'var(--text-primary)';
+        }
     };
 
     if (!prefs) {
@@ -117,7 +131,8 @@ const DigestPage = () => {
                     padding: 'var(--space-48)',
                     backgroundColor: 'white',
                     border: '1px solid var(--border-color)',
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.02)'
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.02)',
+                    marginBottom: 'var(--space-64)'
                 }}>
                     <header style={{ textAlign: 'center', marginBottom: 'var(--space-48)', borderBottom: '2px solid var(--accent-color)', paddingBottom: 'var(--space-32)' }}>
                         <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>Top 10 Jobs For You — 9AM Digest</h2>
@@ -162,8 +177,49 @@ const DigestPage = () => {
                     </footer>
                 </div>
             )}
+
+            {/* Recent Status Updates Section */}
+            <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+                <h3 style={{ marginBottom: 'var(--space-24)', fontSize: '20px', fontFamily: 'var(--font-serif)' }}>Recent Status Updates</h3>
+                <div className="card" style={{ padding: 'var(--space-32)', backgroundColor: 'white' }}>
+                    {history.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-24)' }}>
+                            {history.map((entry, i) => (
+                                <div key={i} style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: i === history.length - 1 ? 'none' : '1px solid var(--border-color)',
+                                    paddingBottom: i === history.length - 1 ? 0 : 'var(--space-16)'
+                                }}>
+                                    <div>
+                                        <div style={{ fontWeight: 600, fontSize: '15px' }}>{entry.title}</div>
+                                        <div style={{ fontSize: '13px', opacity: 0.5 }}>{entry.company} • {new Date(entry.timestamp).toLocaleDateString()}</div>
+                                    </div>
+                                    <span style={{
+                                        fontSize: '11px',
+                                        textTransform: 'uppercase',
+                                        fontWeight: 700,
+                                        backgroundColor: `${getStatusColor(entry.status)}15`,
+                                        color: getStatusColor(entry.status),
+                                        padding: '4px 12px',
+                                        border: `1px solid ${getStatusColor(entry.status)}30`
+                                    }}>
+                                        {entry.status}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p style={{ textAlign: 'center', opacity: 0.4, margin: 0, padding: 'var(--space-24) 0' }}>
+                            No status updates recorded yet.
+                        </p>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };
 
 export default DigestPage;
+

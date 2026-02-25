@@ -2,15 +2,23 @@ import React, { useState, useEffect } from 'react';
 import jobsData from '../data/jobs.json';
 import JobCard from '../components/JobCard';
 import JobModal from '../components/JobModal';
+import Toast from '../components/Toast';
+import { STATUS_STATES, setJobStatus } from '../utils/status';
 
 const SavedPage = () => {
     const [savedJobs, setSavedJobs] = useState([]);
     const [selectedJob, setSelectedJob] = useState(null);
+    const [jobStatuses, setJobStatuses] = useState({});
+    const [toast, setToast] = useState(null);
 
     useEffect(() => {
         const savedIds = JSON.parse(localStorage.getItem('savedJobIds') || '[]');
         const filtered = jobsData.filter(job => savedIds.includes(job.id));
         setSavedJobs(filtered);
+
+        // Load all job statuses
+        const allStatuses = JSON.parse(localStorage.getItem('jobTrackerStatuses') || '{}');
+        setJobStatuses(allStatuses);
     }, []);
 
     const handleUnsave = (id) => {
@@ -18,6 +26,15 @@ const SavedPage = () => {
         const newIds = savedIds.filter(savedId => savedId !== id);
         localStorage.setItem('savedJobIds', JSON.stringify(newIds));
         setSavedJobs(savedJobs.filter(job => job.id !== id));
+    };
+
+    const handleStatusUpdate = (jobId, newStatus) => {
+        const job = jobsData.find(j => j.id === jobId);
+        if (!job) return;
+
+        setJobStatus(jobId, newStatus, job);
+        setJobStatuses(prev => ({ ...prev, [jobId]: newStatus }));
+        setToast({ message: `Status updated: ${newStatus}`, type: 'success' });
     };
 
     return (
@@ -33,6 +50,8 @@ const SavedPage = () => {
                             onUnsave={handleUnsave}
                             isSaved={true}
                             onView={setSelectedJob}
+                            status={jobStatuses[job.id] || STATUS_STATES.NOT_APPLIED}
+                            onStatusChange={handleStatusUpdate}
                         />
                     ))
                 ) : (
@@ -58,8 +77,17 @@ const SavedPage = () => {
                 job={selectedJob}
                 onClose={() => setSelectedJob(null)}
             />
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };
 
 export default SavedPage;
+

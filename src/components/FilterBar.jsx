@@ -1,10 +1,13 @@
 import React from 'react';
+import { STATUS_STATES } from '../utils/status';
 
 const FilterBar = ({ filters, onFilterChange }) => {
     const locations = ["All Locations", "Bangalore", "Mysore", "Gurugram", "Pune", "Chennai", "Noida", "Hyderabad", "Mumbai", "Kolkata", "Remote"];
     const modes = ["All Modes", "Remote", "Hybrid", "Onsite"];
     const experiences = ["All Experience", "Fresher", "0-1", "1-3", "3-5"];
     const sources = ["All Sources", "LinkedIn", "Naukri", "Indeed"];
+    const statuses = ["All Statuses", ...Object.values(STATUS_STATES)];
+
     const sortOptions = [
         { label: "Latest", value: "latest" },
         { label: "Match Score", value: "match-desc" },
@@ -25,6 +28,18 @@ const FilterBar = ({ filters, onFilterChange }) => {
         outline: 'none',
         flex: 1,
         minWidth: '140px'
+    };
+
+    const handleClear = () => {
+        onFilterChange({
+            query: '',
+            location: 'All Locations',
+            mode: 'All Modes',
+            experience: 'All Experience',
+            source: 'All Sources',
+            status: 'All Statuses',
+            sort: 'latest'
+        });
     };
 
     return (
@@ -52,6 +67,14 @@ const FilterBar = ({ filters, onFilterChange }) => {
                     onChange={(e) => handleChange('location', e.target.value)}
                 >
                     {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                </select>
+
+                <select
+                    style={{ ...selectStyle, borderLeft: '2px solid var(--accent-color)', flex: 1.5 }}
+                    value={filters.status || 'All Statuses'}
+                    onChange={(e) => handleChange('status', e.target.value)}
+                >
+                    {statuses.map(st => <option key={st} value={st}>{st === 'All Statuses' ? st : `Status: ${st}`}</option>)}
                 </select>
             </div>
 
@@ -87,9 +110,28 @@ const FilterBar = ({ filters, onFilterChange }) => {
                 >
                     {sortOptions.map(opt => <option key={opt.value} value={opt.value}>Sort: {opt.label}</option>)}
                 </select>
+
+                <button
+                    onClick={handleClear}
+                    style={{
+                        padding: 'var(--space-8) var(--space-24)',
+                        backgroundColor: 'transparent',
+                        border: '1px solid var(--accent-color)',
+                        color: 'var(--accent-color)',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                    }}
+                >
+                    Clear All
+                </button>
             </div>
         </div>
     );
 };
 
+
 export default FilterBar;
+
